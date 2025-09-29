@@ -51,6 +51,14 @@ docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topi
 docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic processed_video_frames --partitions 3 --replication-factor 1
 docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic video_source_aggregations --partitions 3 --replication-factor 1
 
+# Create file upload processing topics
+echo "Creating file upload processing topics..."
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic uploaded_documents --partitions 3 --replication-factor 1
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic uploaded_videos --partitions 3 --replication-factor 1
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic uploaded_images --partitions 3 --replication-factor 1
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic processed_files --partitions 3 --replication-factor 1
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic file_type_aggregations --partitions 3 --replication-factor 1
+
 # List created topics
 echo "Created topics:"
 docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list
@@ -73,5 +81,10 @@ echo "Video processing:"
 echo "5. Run video producer: python video_frame_producer.py"
 echo "6. Run video Flink job: python video_flink_processor.py"
 echo "7. Run video consumer: python video_frame_consumer.py"
+echo ""
+echo "File upload processing:"
+echo "8. Run web UI: python web_ui.py"
+echo "9. Run file Flink job: python file_flink_processor.py"
+echo "10. Access web UI at: http://localhost:5000"
 echo ""
 echo "To stop services: docker-compose down"

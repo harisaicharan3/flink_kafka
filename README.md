@@ -41,6 +41,13 @@ Video Producer → video_frames topic → Flink Video Processor → processed_vi
                                                            → Console Output
 ```
 
+### File Upload Processing
+```
+Web UI → uploaded_documents/videos/images topics → Flink File Processor → processed_files topic
+                                                                        → file_type_aggregations topic
+                                                                        → Console Output
+```
+
 ## 📋 Prerequisites
 
 - Docker and Docker Compose
@@ -107,6 +114,22 @@ python video_frame_producer.py
 python video_frame_consumer.py
 ```
 
+#### File Upload Processing Demo
+**Terminal 1 - Start File Flink Processing Job:**
+```bash
+python file_flink_processor.py
+```
+
+**Terminal 2 - Start Web UI:**
+```bash
+python web_ui.py
+```
+
+**Terminal 3 - Monitor File Results:**
+```bash
+python file_upload_consumer.py
+```
+
 #### Complete Demo Runner
 ```bash
 # Run complete transaction demo
@@ -114,6 +137,9 @@ python demo.py
 
 # Run complete video demo
 python video_demo.py
+
+# Access web UI for file uploads
+# Open browser: http://localhost:5000
 ```
 
 ## 📊 What You'll See
@@ -135,6 +161,16 @@ python video_demo.py
    - Aggregates by source and resolution category
    - Creates time-windowed video statistics
 3. **Video Consumer** displays processed frame analysis
+
+### File Upload Data Flow
+1. **Web UI** allows users to upload documents, videos, and images
+2. **Flink** processes uploaded files with various operations:
+   - Filters large files (> 1MB)
+   - Extracts metadata (text content, video properties, image dimensions)
+   - Analyzes file properties (size categories, quality metrics)
+   - Aggregates by file type and size category
+   - Creates time-windowed file statistics
+3. **File Consumer** displays processed file analysis and can save files locally
 
 ### Sample Data Structures
 
@@ -165,6 +201,23 @@ python video_demo.py
   "frame_channels": 3,
   "frame_size_bytes": 45678,
   "metadata": {}
+}
+```
+
+#### Uploaded File Data
+```json
+{
+  "file_id": "document_1705123456789",
+  "filename": "report.pdf",
+  "file_type": "document",
+  "file_size": 2048576,
+  "file_hash": "md5_hash_here",
+  "upload_timestamp": "2024-01-15T10:30:00",
+  "file_content": "base64_encoded_file_content...",
+  "metadata": {
+    "text_content": "Document text content...",
+    "mime_type": "application/pdf"
+  }
 }
 ```
 
@@ -251,6 +304,48 @@ python video_demo.py
 - Frame analysis and processing
 - Multiple consumption patterns
 
+### File Upload Processing Components
+
+#### 7. Web UI (`web_ui.py`)
+- Provides a modern web interface for file uploads
+- Supports drag-and-drop file uploads
+- Real-time connection status monitoring
+- File type validation and metadata extraction
+- Responsive design with progress indicators
+
+**Key Concepts:**
+- Web-based file upload interface
+- Real-time Kafka connection monitoring
+- File type detection and validation
+- Base64 encoding for binary data transport
+
+#### 8. File Flink Processor (`file_flink_processor.py`)
+- Processes uploaded files in real-time
+- Implements file-specific operations:
+  - **Filter**: Large file filtering (> 1MB)
+  - **Map**: File analysis and metadata extraction
+  - **KeyBy**: File type-based grouping
+  - **Window**: Time-based file statistics
+- Analyzes documents, videos, and images
+
+**Key Concepts:**
+- Multi-topic file processing
+- File metadata extraction
+- Size-based categorization
+- File type aggregations
+
+#### 9. File Upload Consumer (`file_upload_consumer.py`)
+- Consumes uploaded and processed files
+- Displays file analysis results
+- Supports file saving to local disk
+- Multiple consumption modes (uploaded, processed, aggregations)
+
+**Key Concepts:**
+- File reconstruction from base64
+- Analysis result visualization
+- Local file storage
+- Multiple consumption patterns
+
 ## 🎓 Learning Exercises
 
 ### Beginner
@@ -283,6 +378,13 @@ python video_demo.py
 - `video_frames`: Raw video frame data
 - `processed_video_frames`: Analyzed and enriched frame data
 - `video_source_aggregations`: Source-wise frame statistics
+
+#### File Upload Processing Topics
+- `uploaded_documents`: Raw document file data
+- `uploaded_videos`: Raw video file data
+- `uploaded_images`: Raw image file data
+- `processed_files`: Analyzed and enriched file data
+- `file_type_aggregations`: File type-wise statistics
 
 ### Flink Configuration
 - Parallelism: 1 (for demo purposes)
