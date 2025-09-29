@@ -45,6 +45,12 @@ docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topi
 docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic user_aggregations --partitions 3 --replication-factor 1
 docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic high_value_transactions --partitions 3 --replication-factor 1
 
+# Create video processing topics
+echo "Creating video processing topics..."
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic video_frames --partitions 3 --replication-factor 1
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic processed_video_frames --partitions 3 --replication-factor 1
+docker exec kafka kafka-topics --bootstrap-server localhost:9092 --create --topic video_source_aggregations --partitions 3 --replication-factor 1
+
 # List created topics
 echo "Created topics:"
 docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list
@@ -59,8 +65,13 @@ echo "- Flink Dashboard: http://localhost:8081"
 echo ""
 echo "Next steps:"
 echo "1. Activate virtual environment: source venv/bin/activate"
-echo "2. Run producer: python kafka_producer.py"
-echo "3. Run Flink job: python flink_processor.py"
-echo "4. Run consumer: python kafka_consumer.py"
+echo "2. Run transaction producer: python kafka_producer.py"
+echo "3. Run transaction Flink job: python flink_processor.py"
+echo "4. Run transaction consumer: python kafka_consumer.py"
+echo ""
+echo "Video processing:"
+echo "5. Run video producer: python video_frame_producer.py"
+echo "6. Run video Flink job: python video_flink_processor.py"
+echo "7. Run video consumer: python video_frame_consumer.py"
 echo ""
 echo "To stop services: docker-compose down"

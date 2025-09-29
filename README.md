@@ -13,6 +13,7 @@ This project covers:
 - **Partitioning**: Understanding message partitioning and keys
 - **Consumer Groups**: Managing multiple consumers
 - **Serialization**: JSON message serialization/deserialization
+- **Binary Data**: Handling video frames and binary content
 
 ### Flink Operations
 - **Stream Processing**: Real-time data processing
@@ -22,13 +23,22 @@ This project covers:
 - **Window Operations**: Time-based aggregations
 - **Sink Operations**: Writing processed data back to Kafka
 - **Watermarks**: Handling event time and late data
+- **Video Processing**: Real-time video frame analysis
 
 ## 🏗️ Architecture
 
+### Transaction Processing
 ```
 Kafka Producer → transactions topic → Flink Processor → processed_transactions topic
                                                       → user_aggregations topic
                                                       → Console Output
+```
+
+### Video Processing
+```
+Video Producer → video_frames topic → Flink Video Processor → processed_video_frames topic
+                                                           → video_source_aggregations topic
+                                                           → Console Output
 ```
 
 ## 📋 Prerequisites
@@ -61,8 +71,9 @@ The setup script will:
 source venv/bin/activate
 ```
 
-### 3. Run the Demo
+### 3. Run the Demos
 
+#### Transaction Processing Demo
 Open multiple terminals and run these commands in order:
 
 **Terminal 1 - Start Flink Processing Job:**
@@ -80,9 +91,34 @@ python kafka_producer.py
 python kafka_consumer.py
 ```
 
+#### Video Processing Demo
+**Terminal 1 - Start Video Flink Processing Job:**
+```bash
+python video_flink_processor.py
+```
+
+**Terminal 2 - Start Video Producer:**
+```bash
+python video_frame_producer.py
+```
+
+**Terminal 3 - Monitor Video Results:**
+```bash
+python video_frame_consumer.py
+```
+
+#### Complete Demo Runner
+```bash
+# Run complete transaction demo
+python demo.py
+
+# Run complete video demo
+python video_demo.py
+```
+
 ## 📊 What You'll See
 
-### Data Flow
+### Transaction Data Flow
 1. **Producer** generates sample e-commerce transaction data
 2. **Flink** processes the data with various operations:
    - Filters high-value transactions (> $100)
@@ -91,7 +127,18 @@ python kafka_consumer.py
    - Creates time-windowed summaries
 3. **Consumer** displays the processed results
 
-### Sample Data Structure
+### Video Data Flow
+1. **Video Producer** captures/generates video frames
+2. **Flink** processes video frames with various operations:
+   - Filters high-resolution frames (> 480p)
+   - Analyzes frame properties (brightness, aspect ratio, compression)
+   - Aggregates by source and resolution category
+   - Creates time-windowed video statistics
+3. **Video Consumer** displays processed frame analysis
+
+### Sample Data Structures
+
+#### Transaction Data
 ```json
 {
   "transaction_id": "txn_1234567890_1234",
@@ -106,9 +153,26 @@ python kafka_consumer.py
 }
 ```
 
+#### Video Frame Data
+```json
+{
+  "frame_id": "frame_123_1705123456789",
+  "timestamp": "2024-01-15T10:30:00",
+  "source": "webcam",
+  "frame_data": "base64_encoded_jpeg_data...",
+  "frame_width": 640,
+  "frame_height": 480,
+  "frame_channels": 3,
+  "frame_size_bytes": 45678,
+  "metadata": {}
+}
+```
+
 ## 🔧 Components Explained
 
-### 1. Kafka Producer (`kafka_producer.py`)
+### Transaction Processing Components
+
+#### 1. Kafka Producer (`kafka_producer.py`)
 - Generates realistic e-commerce transaction data
 - Demonstrates message keying for partitioning
 - Shows batch processing and error handling
@@ -119,7 +183,7 @@ python kafka_consumer.py
 - Producer configuration (acks, retries, batching)
 - Topic partitioning strategies
 
-### 2. Flink Processor (`flink_processor.py`)
+#### 2. Flink Processor (`flink_processor.py`)
 - Consumes from Kafka topics
 - Implements various Flink operations:
   - **Map**: Data transformation and enrichment
@@ -135,7 +199,7 @@ python kafka_consumer.py
 - Window operations
 - State management
 
-### 3. Kafka Consumer (`kafka_consumer.py`)
+#### 3. Kafka Consumer (`kafka_consumer.py`)
 - Consumes from multiple topics
 - Demonstrates different consumption patterns
 - Shows real-time monitoring capabilities
@@ -145,6 +209,47 @@ python kafka_consumer.py
 - Offset management
 - Message deserialization
 - Error handling
+
+### Video Processing Components
+
+#### 4. Video Frame Producer (`video_frame_producer.py`)
+- Captures frames from webcam, video files, or generates sample frames
+- Converts frames to base64 for Kafka transmission
+- Demonstrates binary data handling with Kafka
+- Supports multiple video sources
+
+**Key Concepts:**
+- Binary data serialization
+- Video frame encoding/decoding
+- Real-time video capture
+- Base64 encoding for JSON transport
+
+#### 5. Video Flink Processor (`video_flink_processor.py`)
+- Processes video frames in real-time
+- Implements video-specific operations:
+  - **Filter**: High-resolution frame filtering
+  - **Map**: Frame analysis and metadata extraction
+  - **KeyBy**: Source-based grouping
+  - **Window**: Time-based video statistics
+- Analyzes frame properties without full OpenCV dependency
+
+**Key Concepts:**
+- Binary data processing in Flink
+- Video frame analysis
+- Metadata extraction
+- Real-time video statistics
+
+#### 6. Video Frame Consumer (`video_frame_consumer.py`)
+- Consumes and displays video frames
+- Performs frame analysis and visualization
+- Supports multiple consumption modes (display, analyze, save)
+- Demonstrates video frame reconstruction
+
+**Key Concepts:**
+- Video frame reconstruction
+- Real-time video display
+- Frame analysis and processing
+- Multiple consumption patterns
 
 ## 🎓 Learning Exercises
 
@@ -167,10 +272,17 @@ python kafka_consumer.py
 ## 🛠️ Configuration
 
 ### Kafka Topics
+
+#### Transaction Processing Topics
 - `transactions`: Raw transaction data
 - `processed_transactions`: Enriched and filtered data
 - `user_aggregations`: User-wise spending summaries
 - `high_value_transactions`: Transactions > $500
+
+#### Video Processing Topics
+- `video_frames`: Raw video frame data
+- `processed_video_frames`: Analyzed and enriched frame data
+- `video_source_aggregations`: Source-wise frame statistics
 
 ### Flink Configuration
 - Parallelism: 1 (for demo purposes)
